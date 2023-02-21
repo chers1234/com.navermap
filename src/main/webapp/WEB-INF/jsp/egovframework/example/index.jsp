@@ -273,7 +273,7 @@ $('#btn-search').on("click", function(event) {
       	map: map,
       	path: points,
       	strokeColor: '#ff0000',
-      	strokeWeight: 2,
+      	strokeWeight: 4,
       	strokeOpacity: 0.5
       });
     },

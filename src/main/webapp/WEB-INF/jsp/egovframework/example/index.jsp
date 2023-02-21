@@ -255,9 +255,7 @@ $("#controls").on("click", function(e) {
 
 $("#interaction, #tile-transition, #controls").addClass("control-on");
 
-//////
-
-
+// 좌표로 길찾기 검색 버튼 클릭
 $('#btn-search').on("click", function(event) {
   event.preventDefault();
   var start = $('#start-point').val();
@@ -284,8 +282,6 @@ $('#btn-search').on("click", function(event) {
     }
   });
 });
-
-////////
 
 
 //마커

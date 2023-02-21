@@ -2,11 +2,11 @@ package egovframework.example.sample.web;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 
 import javax.net.ssl.HttpsURLConnection;
-import javax.servlet.http.HttpServletRequest;
 
 import org.json.JSONObject;
 import org.springframework.stereotype.Controller;
@@ -23,15 +23,15 @@ public class NaverMapController {
 	
 	@RequestMapping(value = "/proxy.do", produces = "application/json" )
 	@ResponseBody
-	public String proxy(HttpServletRequest req) {
-		String start = req.getParameter("start");
-		String goal = req.getParameter("goal");
+	public String proxy(String urlStr) {
+//		String start = req.getParameter("start");
+//		String goal = req.getParameter("goal");
 		JSONObject result=null;
 		try {
-			String urlStr="https://naveropenapi.apigw.ntruss.com/map-direction/v1/driving?start=" + start + "&goal=" + goal;
+//			String urlStr="https://naveropenapi.apigw.ntruss.com/map-direction/v1/driving?start=" + start + "&goal=" + goal;
 			
+			urlStr = URLDecoder.decode(urlStr, StandardCharsets.UTF_8.name()).replace("&amp;","&");
 			System.out.println(urlStr);
-			
 			URL url = new URL(urlStr);
 			HttpsURLConnection conn = (HttpsURLConnection)url.openConnection();
 			
@@ -51,7 +51,7 @@ public class NaverMapController {
 			}
 			
 			result = new JSONObject(sb.toString()); // json으로 변경 (역직렬화)
-			System.out.println("code= " + result.getInt("code") + " / message= " + result.getString("message"));
+//			System.out.println("code= " + result.getInt("code") + " / message= " + result.getString("message"));
 			
 		} catch (Exception e) {
 			e.printStackTrace();

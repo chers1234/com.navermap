@@ -260,7 +260,8 @@ $('#btn-search').on("click", function(event) {
   event.preventDefault();
   var start = $('#start-point').val();
   var end = $('#end-point').val();
-  var url = '/proxy.do?start=' + start + '&goal=' + end;
+  var usrStr = encodeURIComponent("https://naveropenapi.apigw.ntruss.com/map-direction/v1/driving?start=" + start + "&goal=" + end);
+  var url = '/proxy.do?urlStr='+usrStr;
   $.ajax({
     url: url,
     type: 'GET',

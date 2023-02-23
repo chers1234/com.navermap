@@ -1,6 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
-<!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
@@ -258,30 +257,90 @@ $("#interaction, #tile-transition, #controls").addClass("control-on");
 // 좌표로 길찾기 검색 버튼 클릭
 $('#btn-search').on("click", function(event) {
   event.preventDefault();
-  var start = $('#start-point').val();
-  var end = $('#end-point').val();
-  var usrStr = encodeURIComponent("https://naveropenapi.apigw.ntruss.com/map-direction/v1/driving?start=" + start + "&goal=" + end);
-  var url = '/proxy.do?urlStr='+usrStr;
-  $.ajax({
-    url: url,
-    type: 'GET',
-    success: function(response) {
-      var path = response.route.traoptimal[0].path;
-      var points = path.map(function(point) {
-        return new naver.maps.LatLng(point[1], point[0]);
+  var startAddr = $('#start-point').val(); // 출발지 주소
+  var endAddr = $('#end-point').val(); // 도착지 주소
+  /* 
+  //////////// 원래꺼
+  var geocoder = new naver.maps.Service.geocode(); // 지오코딩 서비스 객체 생성
+  geocoder.addressToCoord({ // 출발지 주소를 좌표로 변환
+    address: startAddr
+  }, function(startCoord) {
+    geocoder.addressToCoord({ // 도착지 주소를 좌표로 변환
+      address: endAddr
+    }, function(endCoord) {
+//	  var usrStr = encodeURIComponent("https://naveropenapi.apigw.ntruss.com/map-geocode/v2/geocode");
+      var usrStr = encodeURIComponent("https://naveropenapi.apigw.ntruss.com/map-direction/v1/driving?start=" + startCoord.longitude + "," + startCoord.latitude + "&goal=" + endCoord.longitude + "," + endCoord.latitude);
+      var url = '/proxy.do?urlStr='+usrStr;
+      $.ajax({
+        url: url,
+        type: 'GET',
+        success: function(response) {
+          var path = response.route.traoptimal[0].path;
+          var points = path.map(function(point) {
+            return new naver.maps.LatLng(point[1], point[0]);
+          });
+          var polyline = new naver.maps.Polyline({
+          	map: map,
+          	path: points,
+          	strokeColor: '#ff0000',
+          	strokeWeight: 5,
+          	strokeOpacity: 0.5
+          });
+        },
+        error: function(xhr, status, error) {
+          $('#result').text('검색에 실패했습니다: ' + error);
+        }
       });
-      var polyline = new naver.maps.Polyline({
-      	map: map,
-      	path: points,
-      	strokeColor: '#ff0000',
-      	strokeWeight: 5,
-      	strokeOpacity: 0.5
-      });
-    },
-    error: function(xhr, status, error) {
-      $('#result').text('검색에 실패했습니다: ' + error);
-    }
+    });
+  }); 
+  ////
+  */
+  
+  // 츨발지 지오코딩
+  let startPoint, endPoint;
+  naver.maps.Service.geocode({ query: startAddr }, function(status, response) {
+	  if (status === naver.maps.Service.Status.ERROR) { return alert('Something Wrong!'); }
+	  if (response.v2.meta.totalCount === 0) { return alert('totalCount' + response.v2.meta.totalCount); }
+
+	  var item = response.v2.addresses[0],
+      startPoint = new naver.maps.LatLng(item.x, item.y);
+	  	  
+	  naver.maps.Service.geocode({ query: endAddr }, function(status, response) {
+		  if (status === naver.maps.Service.Status.ERROR) { return alert('Something Wrong!'); }
+		  if (response.v2.meta.totalCount === 0) { return alert('totalCount' + response.v2.meta.totalCount); }
+
+		  var item = response.v2.addresses[0],
+		  endPoint = new naver.maps.LatLng(item.x, item.y);
+		  console.log("startPoint: "+startPoint+", endPoint: "+ endPoint);
+		  
+// 		  var usrStr = encodeURIComponent("https://naveropenapi.apigw.ntruss.com/map-direction/v1/driving?start=" + startPoint.longitude + "," + startPoint.latitude + "&goal=" + endPoint.longitude + "," + endPoint.latitude);
+		  var usrStr = encodeURIComponent("https://naveropenapi.apigw.ntruss.com/map-direction/v1/driving?start=" + startPoint.y + "," + startPoint.x + "&goal=" + endPoint.y + "," + endPoint.x);
+	      var url = '/proxy.do?urlStr='+usrStr;
+	      $.ajax({
+	        url: url,
+	        type: 'GET',
+	        success: function(response) {
+	          var path = response.route.traoptimal[0].path;
+	          var points = path.map(function(point) {
+	            return new naver.maps.LatLng(point[1], point[0]);
+	          });
+	          var polyline = new naver.maps.Polyline({
+	          	map: map,
+	          	path: points,
+	          	strokeColor: '#ff0000',
+	          	strokeWeight: 5,
+	          	strokeOpacity: 0.5
+	          });
+	        },
+	        error: function(xhr, status, error) {
+	          $('#result').text('검색에 실패했습니다: ' + error);
+	        }
+	      });
+	  });
   });
+  
+
+//   }
 });
 
 

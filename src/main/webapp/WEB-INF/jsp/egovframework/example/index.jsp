@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
-    <title>간단한 지도 표시하기</title>
+    <title>네이버 api를 이용한 길찾기</title>
     <script type="text/javascript" src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=nn9o99r7mj"></script>
     <script type="text/javascript" src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=nn9o99r7mj&amp;submodules=panorama,geocoder,drawing,visualization"></script>
     <script src="http://code.jquery.com/jquery-latest.min.js"></script>
@@ -26,25 +26,21 @@
     <input id="controls" type="button" name="모든 지도 컨트롤" value="모든 지도 컨트롤" class="control-btn" />
     <input id="min-max-zoom" type="button" name="최소/최대 줌 레벨" value="최소/최대 줌 레벨: 10 ~ 21" class="control-btn" />
     <input id="street" type="button" value="거리뷰" class="control-btn control-on" />
+    <input id="claer" type="button" value="이전 레이어 제거" class="control-btn" />
 </div>
 </div>
 
 <form id="search-form">
-<label for="start-point">출발지:</label>
-<input type="text" id="start-point" name="start-point"><br>
-<label for="end-point">도착지:</label>
-<input type="text" id="end-point" name="end-point"><br>
-<button type="button" id="btn-search">검색</button>
+	<label for="start-point">출발지:</label>
+	<input type="text" id="start-point" name="start-point"><br>
+	<label for="end-point">도착지:</label>
+	<input type="text" id="end-point" name="end-point"><br>
+	<button type="button" id="btn-search">검색</button>
 </form>
 <div id="result"></div>
-
 <div id="pano" style="width:100%;height:300px;"></div>
 
-
-    
 <script>
-
-
 //지도 생성 시에 옵션을 지정할 수 있습니다.
 var map = new naver.maps.Map('map', {
         center: new naver.maps.LatLng(37.60011214750527, 126.70897451513594), //지도의 초기 중심 좌표
@@ -58,15 +54,11 @@ var map = new naver.maps.Map('map', {
             position: naver.maps.Position.TOP_RIGHT
         }
     });
-
-
-    
-
     // 거리뷰 레이어를 생성합니다.
     var streetLayer = new naver.maps.StreetLayer();
     // 거리뷰 버튼에 이벤트를 바인딩합니다.
     var btn = $('#street');
-
+	//레이어컨트롤
     naver.maps.Event.addListener(map, 'streetLayer_changed', function(streetLayer){
     if (streetLayer){
         btn.addClass('control-on');
@@ -74,7 +66,7 @@ var map = new naver.maps.Map('map', {
         btn.removeClass('control-on');
     }
 });
-
+	//버튼 클릭 이벤트
 btn.on("click", function(e) {
     e.preventDefault();
 
@@ -141,7 +133,7 @@ function onSuccessGeolocation(position) {
     console.log('Coordinates: ' + location.toString());
 }
 
-function onErrorGeolocation() {
+	function onErrorGeolocation() {
     var center = map.getCenter();
 
     infowindow.setContent('<div style="padding:10px;">' +
@@ -252,73 +244,79 @@ $("#controls").on("click", function(e) {
     }
 });
 
-$("#interaction, #tile-transition, #controls").addClass("control-on");
+	//이전 레이어 삭제
+	$('#clear').on("click", function(event) {
+	  event.preventDefault();
 
-// 좌표로 길찾기 검색 버튼 클릭
-$('#btn-search').on("click", function(event) {
-  event.preventDefault();
-  var startAddr = $('#start-point').val(); // 출발지 주소
-  var endAddr = $('#end-point').val(); // 도착지 주소
+	  if (polyline) {
+	    polyline.setMap(null);
+	 	 }
+	});
 
-  // 츨발지 지오코딩
-  let startPoint, endPoint;
-  naver.maps.Service.geocode({ query: startAddr }, function(status, response) {
+$("#interaction, #tile-transition, #controls", "#clear").addClass("control-on");
+
+	// 좌표로 길찾기 검색 버튼 클릭
+	$('#btn-search').on("click", function(event) {
+  		event.preventDefault();
+  		var startAddr = $('#start-point').val(); // 출발지 주소
+  		var endAddr = $('#end-point').val(); // 도착지 주소
+
+  	// 츨발지 지오코딩
+ 		let startPoint, endPoint;
+  		naver.maps.Service.geocode({ query: startAddr }, function(status, response) {
 	  if (status === naver.maps.Service.Status.ERROR) { return alert('Something Wrong!'); }
 	  if (response.v2.meta.totalCount === 0) { return alert('totalCount' + response.v2.meta.totalCount); }
 
 	  var item = response.v2.addresses[0],
       startPoint = new naver.maps.LatLng(item.x, item.y);
 	  	  
-	  naver.maps.Service.geocode({ query: endAddr }, function(status, response) {
-		  if (status === naver.maps.Service.Status.ERROR) { return alert('Something Wrong!'); }
-		  if (response.v2.meta.totalCount === 0) { return alert('totalCount' + response.v2.meta.totalCount); }
+	  		naver.maps.Service.geocode({ query: endAddr }, function(status, response) {
+		  	if (status === naver.maps.Service.Status.ERROR) { return alert('Something Wrong!'); }
+		 	if (response.v2.meta.totalCount === 0) { return alert('totalCount' + response.v2.meta.totalCount); }
 
 		  var item = response.v2.addresses[0],
 		  endPoint = new naver.maps.LatLng(item.x, item.y);
 		  console.log("startPoint: "+startPoint+", endPoint: "+ endPoint);
 		  var usrStr = encodeURIComponent("https://naveropenapi.apigw.ntruss.com/map-direction/v1/driving?start=" + startPoint.y + "," + startPoint.x + "&goal=" + endPoint.y + "," + endPoint.x);
 	      var url = '/proxy.do?urlStr='+usrStr;
-	      $.ajax({
-	        url: url,
-	        type: 'GET',
-	        success: function(response) {
-	          var path = response.route.traoptimal[0].path;
-	          var points = path.map(function(point) {
-	            return new naver.maps.LatLng(point[1], point[0]);
-	          });
-	          var polyline = new naver.maps.Polyline({
-	          	map: map,
-	          	path: points,
-	          	strokeColor: '#ff0000',
-	          	strokeWeight: 5,
-	          	strokeOpacity: 0.5
-	          });
-	        },
+	     		 $.ajax({
+	      			url: url,
+	        		type: 'GET',
+	       			success: function(response) {
+	         		var path = response.route.traoptimal[0].path;
+	          		var points = path.map(function(point) {
+	            	return new naver.maps.LatLng(point[1], point[0]);
+					});
+	          	var polyline = new naver.maps.Polyline({
+	          		map: map,
+	          		path: points,
+	          		strokeColor: '#ff0000',
+	          		strokeWeight: 5,
+	          		strokeOpacity: 0.5
+	        	});
+					},
 	        error: function(xhr, status, error) {
 	          $('#result').text('검색에 실패했습니다: ' + error);
 	        }
-	      });
-	  });
-  });
-  
-
-//   }
-});
+	      		});
+	  		});
+  		});
+	});
 
 
-//마커
-var position = new naver.maps.LatLng(37.60011214750527, 126.70897451513594);
+	//마커
+	var position = new naver.maps.LatLng(37.60011214750527, 126.70897451513594);
 
-var marker = new naver.maps.Marker({
+	var marker = new naver.maps.Marker({
     position: position,
     map: map
 
-});
+	});
 
 
 
-//마커 및 레이어 이동
-naver.maps.Event.addListener(map, 'click', function(e) {
+	//마커 및 레이어 이동
+	naver.maps.Event.addListener(map, 'click', function(e) {
     marker.setPosition(e.coord);
 
     //alert('Your current position is : '+e.coord);
@@ -328,23 +326,23 @@ naver.maps.Event.addListener(map, 'click', function(e) {
         var LatLng = e.coord;
 
         pano.setPosition(LatLng);
-    }
-});
+    	}
+	} );
 
-var pano = null;
+	var pano = null;
 
-var panoramaOptions = {
+	var panoramaOptions = {
     position: new naver.maps.LatLng(37.60011214750527, 126.70897451513594),
     size: new naver.maps.Size(800, 600),
     pov: {
         pan: -135,
         tilt: 29,
         fov: 100
-    }
-};
+    	}
+	};
 
 
-function initPanorama() {
+	function initPanorama() {
     pano = new naver.maps.Panorama("pano", {
         position: new naver.maps.LatLng(37.60011214750527, 126.70897451513594),
         pov: {
@@ -356,13 +354,13 @@ function initPanorama() {
         zoomControlOptions: {
             position: naver.maps.Position.TOP_RIGHT,
             style: naver.maps.ZoomControlStyle.SMALL
-        }
-    });
-}
+        	}
+    	});
+	}
 
-naver.maps.onJSContentLoaded = initPanorama;
+	naver.maps.onJSContentLoaded = initPanorama;
 
-$("#zoom").on("click", function(e) {
+	$("#zoom").on("click", function(e) {
     e.preventDefault();
 
     var el = $(this),
@@ -378,10 +376,10 @@ $("#zoom").on("click", function(e) {
             zoomControl: false
         });
         el.val("ZoomControl 켜기").removeClass("control-on");
-    }
-});
+    	}
+	});
 
-$("#zoomOption").on("click", function(e) {
+	$("#zoomOption").on("click", function(e) {
     e.preventDefault();
 
     var el = $(this),
@@ -394,19 +392,18 @@ $("#zoomOption").on("click", function(e) {
             zoomControlOptions: {
                 style: naver.maps.ZoomControlStyle.LARGE
             }
-        });
+      	});
 
         el.val("작게 보기").addClass("control-on");
-    } else {
+    	} else {
         pano.setOptions({
             zoomControlOptions: {
                 style: naver.maps.ZoomControlStyle.SMALL
-            }
-        });
-
+            					}
+        				});
         el.val("크게 보기").removeClass("control-on");
-    }
-});
+    	}
+	});
 
 
 </script>

@@ -26,7 +26,7 @@
     <input id="controls" type="button" name="모든 지도 컨트롤" value="모든 지도 컨트롤" class="control-btn" />
     <input id="min-max-zoom" type="button" name="최소/최대 줌 레벨" value="최소/최대 줌 레벨: 10 ~ 21" class="control-btn" />
     <input id="street" type="button" value="거리뷰" class="control-btn control-on" />
-    <input id="claer" type="button" value="이전 레이어 제거" class="control-btn" />
+    <input id="claer" type="button" name="이전 레이어 제거" value="이전 레이어 제거" class="control-btn" />
 </div>
 </div>
 
@@ -53,7 +53,7 @@ var map = new naver.maps.Map('map', {
         zoomControlOptions: { //줌 컨트롤의 옵션
             position: naver.maps.Position.TOP_RIGHT
         }
-    });
+});
     // 거리뷰 레이어를 생성합니다.
     var streetLayer = new naver.maps.StreetLayer();
     // 거리뷰 버튼에 이벤트를 바인딩합니다.
@@ -133,11 +133,10 @@ function onSuccessGeolocation(position) {
     console.log('Coordinates: ' + location.toString());
 }
 
-	function onErrorGeolocation() {
-    var center = map.getCenter();
+function onErrorGeolocation() {
+	var center = map.getCenter();
 
-    infowindow.setContent('<div style="padding:10px;">' +
-        '<h5 style="margin-bottom:5px;color:#f00;">Geolocation failed!</h5>'+ "latitude: "+ center.lat() +"<br />longitude: "+ center.lng() +'</div>');
+    infowindow.setContent('<div style="padding:10px;">' + '<h5 style="margin-bottom:5px;color:#f00;">Geolocation failed!</h5>'+ "latitude: "+ center.lat() +"<br />longitude: "+ center.lng() +'</div>');
 
     infowindow.open(map, center);
 }
@@ -157,7 +156,6 @@ $("#interaction").on("click", function(e) {
             disableDoubleClickZoom: true,
             disableTwoFingerTapZoom: true
         });
-
         $(this).removeClass("control-on");
     } else {
         map.setOptions({ //지도 인터랙션 켜기
@@ -169,7 +167,6 @@ $("#interaction").on("click", function(e) {
             disableDoubleClickZoom: false,
             disableTwoFingerTapZoom: false
         });
-
         $(this).addClass("control-on");
     }
 });
@@ -203,209 +200,212 @@ $("#tile-transition").on("click", function(e) {
 
 //min/max 줌 레벨
 $("#min-max-zoom").on("click", function(e) {
-    e.preventDefault();
-
-    if (map.getOptions("minZoom") === 10) {
-        map.setOptions({
-            minZoom: 7,
-            maxZoom: 21
-        });
-        $(this).val(this.name + ': 7 ~ 21');
-    } else {
-        map.setOptions({
-            minZoom: 10,
-            maxZoom: 21
-        });
-        $(this).val(this.name + ': 10 ~ 21');
-    }
+	e.preventDefault();
+	if (map.getOptions("minZoom") === 10) {
+		map.setOptions({
+			minZoom: 7,
+			maxZoom: 21
+		});
+		$(this).val(this.name + ': 7 ~ 21');
+	} else {
+		map.setOptions({
+			minZoom: 10,
+			maxZoom: 21
+		});
+		$(this).val(this.name + ': 10 ~ 21');
+	}
 });
 
 //지도 컨트롤
 $("#controls").on("click", function(e) {
-    e.preventDefault();
-    if (map.getOptions("scaleControl")) {
-        map.setOptions({ //모든 지도 컨트롤 숨기기
-            scaleControl: false,
-            logoControl: false,
-            mapDataControl: false,
-            zoomControl: false,
-            mapTypeControl: false
-        });
-        $(this).removeClass('control-on');
-    } else {
-        map.setOptions({ //모든 지도 컨트롤 보이기
-            scaleControl: true,
-            logoControl: true,
-            mapDataControl: true,
-            zoomControl: true,
-            mapTypeControl: true
-        });
-        $(this).addClass('control-on');
-    }
+	e.preventDefault();
+	if (map.getOptions("scaleControl")) {
+		map.setOptions({ //모든 지도 컨트롤 숨기기
+			scaleControl : false,
+			logoControl : false,
+			mapDataControl : false,
+			zoomControl : false,
+			mapTypeControl : false
+		});
+		$(this).removeClass('control-on');
+	} else {
+		map.setOptions({ //모든 지도 컨트롤 보이기
+			scaleControl : true,
+			logoControl : true,
+			mapDataControl : true,
+			zoomControl : true,
+			mapTypeControl : true
+		});
+		$(this).addClass('control-on');
+	}
 });
 
-	//이전 레이어 삭제
-	$('#clear').on("click", function(event) {
-	  event.preventDefault();
+//이전 레이어 삭제
 
-	  if (polyline) {
-	    polyline.setMap(null);
-	 	 }
-	});
+$('#clear').on("click", function(event) {
+	event.preventDefault();
+
+	if (polyline) {
+		polyline.setMap(null);
+	}
+});
 
 $("#interaction, #tile-transition, #controls", "#clear").addClass("control-on");
 
-	// 좌표로 길찾기 검색 버튼 클릭
-	$('#btn-search').on("click", function(event) {
-  		event.preventDefault();
-  		var startAddr = $('#start-point').val(); // 출발지 주소
-  		var endAddr = $('#end-point').val(); // 도착지 주소
+// 좌표로 길찾기 검색 버튼 클릭
+$('#btn-search').on(
+"click",
+function(event) {
+	event.preventDefault();
+	var startAddr = $('#start-point').val(); // 출발지 주소
+	var endAddr = $('#end-point').val(); // 도착지 주소
 
-  	// 츨발지 지오코딩
- 		let startPoint, endPoint;
-  		naver.maps.Service.geocode({ query: startAddr }, function(status, response) {
-	  if (status === naver.maps.Service.Status.ERROR) { return alert('Something Wrong!'); }
-	  if (response.v2.meta.totalCount === 0) { return alert('totalCount' + response.v2.meta.totalCount); }
+	// 츨발지 지오코딩
+	let startPoint, endPoint;
+	naver.maps.Service.geocode({
+				query : startAddr
+			}, function(status, response) {
+		if (status === naver.maps.Service.Status.ERROR) {
+			return alert('Something Wrong!');
+		}
+		if (response.v2.meta.totalCount === 0) {
+			return alert('totalCount' + response.v2.meta.totalCount);
+		}
 
-	  var item = response.v2.addresses[0],
-      startPoint = new naver.maps.LatLng(item.x, item.y);
-	  	  
-	  		naver.maps.Service.geocode({ query: endAddr }, function(status, response) {
-		  	if (status === naver.maps.Service.Status.ERROR) { return alert('Something Wrong!'); }
-		 	if (response.v2.meta.totalCount === 0) { return alert('totalCount' + response.v2.meta.totalCount); }
+		var item = response.v2.addresses[0], startPoint = new naver.maps.LatLng(item.x, item.y);
 
-		  var item = response.v2.addresses[0],
-		  endPoint = new naver.maps.LatLng(item.x, item.y);
-		  console.log("startPoint: "+startPoint+", endPoint: "+ endPoint);
-		  var usrStr = encodeURIComponent("https://naveropenapi.apigw.ntruss.com/map-direction/v1/driving?start=" + startPoint.y + "," + startPoint.x + "&goal=" + endPoint.y + "," + endPoint.x);
-	      var url = '/proxy.do?urlStr='+usrStr;
-	     		 $.ajax({
-	      			url: url,
-	        		type: 'GET',
-	       			success: function(response) {
-	         		var path = response.route.traoptimal[0].path;
-	          		var points = path.map(function(point) {
-	            	return new naver.maps.LatLng(point[1], point[0]);
+		naver.maps.Service.geocode({ query : endAddr }, function(status, response) {
+			if (status === naver.maps.Service.Status.ERROR) {
+				return alert('Something Wrong!');
+			}
+			if (response.v2.meta.totalCount === 0) {
+				return alert('totalCount' + response.v2.meta.totalCount);
+			}
+
+			var item = response.v2.addresses[0], endPoint = new naver.maps.LatLng( item.x, item.y);
+			console.log("startPoint: " + startPoint + ", endPoint: " + endPoint);
+			var usrStr = encodeURIComponent("https://naveropenapi.apigw.ntruss.com/map-direction/v1/driving?start=" + startPoint.y + "," + startPoint.x + "&goal=" + endPoint.y + "," + endPoint.x);
+			var url = '/proxy.do?urlStr=' + usrStr;
+			$.ajax({
+				url : url,
+				type : 'GET',
+				success : function(response) {
+					var path = response.route.traoptimal[0].path;
+					var points = path.map(function(point) {
+								return new naver.maps.LatLng(point[1],point[0]);
 					});
-	          	var polyline = new naver.maps.Polyline({
-	          		map: map,
-	          		path: points,
-	          		strokeColor: '#ff0000',
-	          		strokeWeight: 5,
-	          		strokeOpacity: 0.5
-	        	});
-					},
-	        error: function(xhr, status, error) {
-	          $('#result').text('검색에 실패했습니다: ' + error);
-	        }
-	      		});
-	  		});
-  		});
+					var polyline = new naver.maps.Polyline({
+						map : map,
+						path : points,
+						strokeColor : '#ff0000',
+						strokeWeight : 5,
+						strokeOpacity : 0.5
+					});
+				}, error : function( xhr, status, error) {
+					$('#result').text('검색에 실패했습니다: '+ error);
+				}
+			});
+		});
 	});
+});
 
+//마커
+var position = new naver.maps.LatLng(37.60011214750527, 126.70897451513594);
 
-	//마커
-	var position = new naver.maps.LatLng(37.60011214750527, 126.70897451513594);
+var marker = new naver.maps.Marker({
+	position : position,
+	map : map
 
-	var marker = new naver.maps.Marker({
-    position: position,
-    map: map
+});
 
-	});
+//마커 및 레이어 이동
+naver.maps.Event.addListener(map, 'click', function(e) {
+	marker.setPosition(e.coord);
 
+	//alert('Your current position is : '+e.coord);
+	console.log('Your current position is : ' + e.coord);
 
+	if (streetLayer.getMap()) {
+		var LatLng = e.coord;
 
-	//마커 및 레이어 이동
-	naver.maps.Event.addListener(map, 'click', function(e) {
-    marker.setPosition(e.coord);
-
-    //alert('Your current position is : '+e.coord);
-    console.log('Your current position is : '+e.coord);
-
-    if(streetLayer.getMap()){
-        var LatLng = e.coord;
-
-        pano.setPosition(LatLng);
-    	}
-	} );
-
-	var pano = null;
-
-	var panoramaOptions = {
-    position: new naver.maps.LatLng(37.60011214750527, 126.70897451513594),
-    size: new naver.maps.Size(800, 600),
-    pov: {
-        pan: -135,
-        tilt: 29,
-        fov: 100
-    	}
-	};
-
-
-	function initPanorama() {
-    pano = new naver.maps.Panorama("pano", {
-        position: new naver.maps.LatLng(37.60011214750527, 126.70897451513594),
-        pov: {
-            pan: -135,
-            tilt: 29,
-            fov: 100
-        },
-        zoomControl: true,
-        zoomControlOptions: {
-            position: naver.maps.Position.TOP_RIGHT,
-            style: naver.maps.ZoomControlStyle.SMALL
-        	}
-    	});
+		pano.setPosition(LatLng);
 	}
+});
 
-	naver.maps.onJSContentLoaded = initPanorama;
+var pano = null;
 
-	$("#zoom").on("click", function(e) {
-    e.preventDefault();
+var panoramaOptions = {
+	position : new naver.maps.LatLng(37.60011214750527, 126.70897451513594),
+	size : new naver.maps.Size(800, 600),
+	pov : {
+		pan : -135,
+		tilt : 29,
+		fov : 100
+	}
+};
 
-    var el = $(this),
-        zoomControlEnabled = pano.getOptions("zoomControl");
-
-    if (!zoomControlEnabled) {
-        pano.setOptions({
-            zoomControl: true
-        });
-        el.val("ZoomControl 끄기").addClass("control-on");
-    } else {
-        pano.setOptions({
-            zoomControl: false
-        });
-        el.val("ZoomControl 켜기").removeClass("control-on");
-    	}
+function initPanorama() {
+	pano = new naver.maps.Panorama("pano", {
+		position : new naver.maps.LatLng(37.60011214750527,
+				126.70897451513594),
+		pov : {
+			pan : -135,
+			tilt : 29,
+			fov : 100
+		},
+		zoomControl : true,
+		zoomControlOptions : {
+			position : naver.maps.Position.TOP_RIGHT,
+			style : naver.maps.ZoomControlStyle.SMALL
+		}
 	});
+}
 
-	$("#zoomOption").on("click", function(e) {
-    e.preventDefault();
+naver.maps.onJSContentLoaded = initPanorama;
 
-    var el = $(this),
-        zoomControlEnabled = pano.getOptions("zoomControl");
+$("#zoom").on("click", function(e) {
+	e.preventDefault();
 
-    if (!zoomControlEnabled) return;
+	var el = $(this), zoomControlEnabled = pano.getOptions("zoomControl");
 
-    if (!el.hasClass("control-on")) {
-        pano.setOptions({
-            zoomControlOptions: {
-                style: naver.maps.ZoomControlStyle.LARGE
-            }
-      	});
+	if (!zoomControlEnabled) {
+		pano.setOptions({
+			zoomControl : true
+		});
+		el.val("ZoomControl 끄기").addClass("control-on");
+	} else {
+		pano.setOptions({
+			zoomControl : false
+		});
+		el.val("ZoomControl 켜기").removeClass("control-on");
+	}
+});
 
-        el.val("작게 보기").addClass("control-on");
-    	} else {
-        pano.setOptions({
-            zoomControlOptions: {
-                style: naver.maps.ZoomControlStyle.SMALL
-            					}
-        				});
-        el.val("크게 보기").removeClass("control-on");
-    	}
-	});
+$("#zoomOption").on("click", function(e) {
+	e.preventDefault();
 
+	var el = $(this), zoomControlEnabled = pano.getOptions("zoomControl");
 
+	if (!zoomControlEnabled)
+		return;
+
+	if (!el.hasClass("control-on")) {
+		pano.setOptions({
+			zoomControlOptions : {
+				style : naver.maps.ZoomControlStyle.LARGE
+			}
+		});
+
+		el.val("작게 보기").addClass("control-on");
+	} else {
+		pano.setOptions({
+			zoomControlOptions : {
+				style : naver.maps.ZoomControlStyle.SMALL
+			}
+		});
+		el.val("크게 보기").removeClass("control-on");
+	}
+});
 </script>
 </body>
 </html>

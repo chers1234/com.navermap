@@ -244,18 +244,15 @@ $("#controls").on("click", function(e) {
 
 $('#clear').on("click", function(event) {
 	event.preventDefault();
-
-	if (polyline) {
-		polyline.setMap(null);
+	if (Polyline) {
+		Polyline.setMap(null);
 	}
 });
 
 $("#interaction, #tile-transition, #controls", "#clear").addClass("control-on");
 
 // 좌표로 길찾기 검색 버튼 클릭
-$('#btn-search').on(
-"click",
-function(event) {
+$('#btn-search').on("click",function(event) {
 	event.preventDefault();
 	var startAddr = $('#start-point').val(); // 출발지 주소
 	var endAddr = $('#end-point').val(); // 도착지 주소
@@ -271,9 +268,7 @@ function(event) {
 		if (response.v2.meta.totalCount === 0) {
 			return alert('totalCount' + response.v2.meta.totalCount);
 		}
-
 		var item = response.v2.addresses[0], startPoint = new naver.maps.LatLng(item.x, item.y);
-
 		naver.maps.Service.geocode({ query : endAddr }, function(status, response) {
 			if (status === naver.maps.Service.Status.ERROR) {
 				return alert('Something Wrong!');
@@ -281,7 +276,6 @@ function(event) {
 			if (response.v2.meta.totalCount === 0) {
 				return alert('totalCount' + response.v2.meta.totalCount);
 			}
-
 			var item = response.v2.addresses[0], endPoint = new naver.maps.LatLng( item.x, item.y);
 			console.log("startPoint: " + startPoint + ", endPoint: " + endPoint);
 			var usrStr = encodeURIComponent("https://naveropenapi.apigw.ntruss.com/map-direction/v1/driving?start=" + startPoint.y + "," + startPoint.x + "&goal=" + endPoint.y + "," + endPoint.x);
@@ -298,6 +292,10 @@ function(event) {
 						map : map,
 						path : points,
 						strokeColor : '#ff0000',
+						strokeStyle : 'shortdash',
+						strokeLineCap : 'round',
+						startIcon : 3,
+						endIcon : 1,
 						strokeWeight : 5,
 						strokeOpacity : 0.5
 					});

@@ -89,7 +89,7 @@ naver.maps.Event.addListener(map, 'zoom_changed', function (zoom) {
 
 map.setOptions('minZoom', 10);
 console.log('잘못된 참조 시점', map.getOptions('minZoom'), map.getOptions('minZoom') === 10);
-var infowindow = new naver.maps.InfoWindow();
+
 // 지도의 옵션 참조는 init 이벤트 이후에 참조해야 합니다.
 naver.maps.Event.once(map, 'init', function () {
     console.log('올바른 참조 시점', map.getOptions('minZoom') === 10);
@@ -253,7 +253,7 @@ $("#interaction, #tile-transition, #controls", "#clear").addClass("control-on");
 
 // 좌표로 길찾기 검색 버튼 클릭
 $('#btn-search').on("click",function(event) {
-	event.preventDefault();
+	event.preventDefault(); 
 	var startAddr = $('#start-point').val(); // 출발지 주소
 	var endAddr = $('#end-point').val(); // 도착지 주소
 
@@ -295,7 +295,9 @@ $('#btn-search').on("click",function(event) {
 						strokeStyle : 'shortdash',
 						strokeLineCap : 'round',
 						startIcon : 3,
+						startIconSize : 10,
 						endIcon : 1,
+						endIconSize : 12,
 						strokeWeight : 5,
 						strokeOpacity : 0.5
 					});
@@ -307,9 +309,51 @@ $('#btn-search').on("click",function(event) {
 	});
 });
 
-//마커
-var position = new naver.maps.LatLng(37.60011214750527, 126.70897451513594);
+var infowindow = new naver.maps.InfoWindow({
+	anchorSkew: true
+});
 
+map.setCursor('pointer');
+
+function searchCoordinateToAddress(latlng) {
+
+    infoWindow.close();
+
+    naver.maps.Service.reverseGeocode({
+        coords: latlng,
+        orders: [
+            naver.maps.Service.OrderType.ADDR,
+            naver.maps.Service.OrderType.ROAD_ADDR
+        ].join(',')
+    }, function(status, response) {
+        if (status === naver.maps.Service.Status.ERROR) {
+            return alert('Something Wrong!');
+        }
+
+        var items = response.v2.results,
+            address = '',
+            htmlAddresses = [];
+
+        for (var i=0, ii=items.length, item, addrType; i<ii; i++) {
+            item = items[i];
+            address = makeAddress(item) || '';
+            addrType = item.name === 'roadaddr' ? '[도로명 주소]' : '[지번 주소]';
+
+            htmlAddresses.push((i+1) +'. '+ addrType +' '+ address);
+        }
+
+        infoWindow.setContent([
+            '<div style="padding:10px;min-width:200px;line-height:150%;">',
+            '<h4 style="margin-top:5px;">검색 좌표</h4><br />',
+            htmlAddresses.join('<br />'),
+            '</div>'
+        ].join('\n'));
+
+        infoWindow.open(map, latlng);
+    });
+}
+
+//마커
 var marker = new naver.maps.Marker({
 	position : position,
 	map : map
@@ -329,7 +373,9 @@ naver.maps.Event.addListener(map, 'click', function(e) {
 		pano.setPosition(LatLng);
 	}
 });
-
+////
+////
+var position = new naver.maps.LatLng(37.60011214750527, 126.70897451513594);
 var pano = null;
 
 var panoramaOptions = {

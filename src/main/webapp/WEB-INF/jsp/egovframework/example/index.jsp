@@ -25,8 +25,8 @@
     <input id="tile-transition" type="button" name="타일 fadeIn 효과" value="타일 fadeIn 효과" class="control-btn" />
     <input id="controls" type="button" name="모든 지도 컨트롤" value="모든 지도 컨트롤" class="control-btn" />
     <input id="min-max-zoom" type="button" name="최소/최대 줌 레벨" value="최소/최대 줌 레벨: 10 ~ 21" class="control-btn" />
+    <input id="remove" type="button" value="폴리라인 삭제" class="btn" />
     <input id="street" type="button" value="거리뷰" class="control-btn control-on" />
-    <input id="claer" type="button" name="이전 레이어 제거" value="이전 레이어 제거" class="control-btn" />
 </div>
 </div>
 
@@ -43,7 +43,7 @@
 <script>
 //지도 생성 시에 옵션을 지정할 수 있습니다.
 var map = new naver.maps.Map('map', {
-        center: new naver.maps.LatLng(37.60011214750527, 126.70897451513594), //지도의 초기 중심 좌표
+        center: new naver.maps.LatLng(37.4954644, 126.8875386), //지도의 초기 중심 좌표
         zoom: 13, //지도의 초기 줌 레벨
         minZoom: 7, //지도의 최소 줌 레벨
         mapTypeControl: true,
@@ -78,8 +78,7 @@ btn.on("click", function(e) {
         streetLayer.setMap(map);
     }
 });
-
-
+	
 //setOptions 메서드를 이용해 옵션을 조정할 수도 있습니다.
 map.setOptions("mapTypeControl", true); //지도 유형 컨트롤의 표시 여부
 
@@ -240,16 +239,7 @@ $("#controls").on("click", function(e) {
 	}
 });
 
-//이전 레이어 삭제
-
-$('#clear').on("click", function(event) {
-	event.preventDefault();
-	if (Polyline) {
-		Polyline.setMap(null);
-	}
-});
-
-$("#interaction, #tile-transition, #controls", "#clear").addClass("control-on");
+$("#interaction, #tile-transition, #controls").addClass("control-on");
 
 // 좌표로 길찾기 검색 버튼 클릭
 $('#btn-search').on("click",function(event) {
@@ -301,6 +291,11 @@ $('#btn-search').on("click",function(event) {
 						strokeWeight : 5,
 						strokeOpacity : 0.5
 					});
+					$('#remove').on("click", function() {
+						if (polyline){
+							polyline.setMap(null);
+						}
+					})
 				}, error : function( xhr, status, error) {
 					$('#result').text('검색에 실패했습니다: '+ error);
 				}
@@ -309,16 +304,137 @@ $('#btn-search').on("click",function(event) {
 	});
 });
 
-var infowindow = new naver.maps.InfoWindow({
-	anchorSkew: true
-});
-
 map.setCursor('pointer');
 
+/* function searchCoordinateToAddress(latlng) {
+	infoWindow.close();
+	naver.maps.Service.reverseGeocode({
+		coords: latlng,
+		orders: [
+			naver.maps.Service.OrderType.ADDR,
+			naver.maps.Service.OrderType.ROAD_ADDR
+		].join(',')
+	}, function(status, response){
+		if (status == naver.maps.Service.Status.ERROR){
+			return alert('something Wrong!');
+		}
+		var items = response.v2.results,
+		address = '',
+		htmlAddresses = [];
+		
+		for(var i=0, ii=items.length, item, addrType; i<ii; i++){
+			item = items[i];
+			address = makeAddress(item) || '';
+			addrType = item.name === 'roadaddr' ? '[도로명 주소]' : '[지번 주소]';
+			htmlAddresses.push((i+1) + '. '+ addrType +' '+ address);
+		}
+		infoWindow.setContent([
+			'<div style="padding:10px;min-width:200px;line-height:150%;">',
+            '<h4 style="margin-top:5px;">검색 좌표</h4><br />',
+            htmlAddresses.join('<br />'),
+            '</div>'
+		].join('\n'));
+		
+		infoWindow.open(map, latlng);
+	});
+}
 
+function initGeocoder(){
+	map.addListener('click', function(e) {
+		searchCoordinateToAddress(e.coord);
+	});
+	
+	$('#address').on('keydonw', function(e) {
+		var keyCode = e.which;
+		
+		if (keyCode === 13){
+			searchAddressToCoorinate($('#address').val());
+		}
+	});
+	
+	$('#submit').on('click', function(e) {
+		e.preventDefault();
+		searchAddressToCoordinate($('#address').val());
+	});
+	searchAdressToCoordinate('이음6로 33');
+}
+
+function makeAddress(item){
+	if (!tem){
+		return;
+	}
+	
+	var name = item.name,
+	region = item.region,
+	land = item.land,
+	isRoadAddress = name === 'roadaddr';
+	
+	var sido = '', sigugun = '', dongmyun = '', ri = '', rest = '';
+	
+	if (hasArea(region.area1)) {
+		sido = region.area1.name;
+	}
+	
+	if (hasArea(region.area2)) {
+		sigugun = region.area2.name;
+	}
+	if (hasArea(region.area3)) {
+		dongmyun = region.area3.name;
+	}
+	if (hasArea(region.area4)) {
+		ri = region.area4.name;
+	}
+	
+	if (land) {
+		if (hasData(land.number1)) {
+			if (hasData(land.type) && land.type === '2'){
+				rest += '산';
+			}
+			
+			rest += land.number1;
+			
+			if (hasData(land.number2)) {
+				rest += ('-'+ land.number2);
+			}
+		}
+		if (isRoadAddress === true){
+			if (checkLastString(dongmyun, '면')) {
+				ri = land.name;
+				ri = '';
+			}
+			if (hasAddition(land.addition0)) {
+				rest += ' ' + land.addition0.value;
+			}
+		}
+	}
+	
+	return [sido, sigugun, dongmyun, ri, rest].join(' ');
+}
+function hasArea(area) {
+	return !!(area && area.name && area.name !== '');
+}
+
+function hasData(data) {
+	return !!(data && data !== '');
+}
+
+function checkLastString (word, lastString){
+	return new RegExp(lastString + '$').test(word);
+}
+
+function hasAddition (addition) {
+	return !!(addition && addition.value);
+}
+
+naver.maps.onJSContentLoaded = initGeocoder; */
+
+
+/////////
+/////////
+////////
 //마커
 var marker = new naver.maps.Marker({
-	position : position,
+	position : new naver.maps.LatLng(37.4954644, 126.8875386),
 	map : map
 });
 
@@ -337,11 +453,11 @@ naver.maps.Event.addListener(map, 'click', function(e) {
 });
 ////
 ////
-var position = new naver.maps.LatLng(37.60011214750527, 126.70897451513594);
+var position = new naver.maps.LatLng(37.4954644, 126.8875386);
 var pano = null;
 
 var panoramaOptions = {
-	position : new naver.maps.LatLng(37.60011214750527, 126.70897451513594),
+	position : new naver.maps.LatLng(37.4954644, 126.8875386),
 	size : new naver.maps.Size(800, 600),
 	pov : {
 		pan : -135,
@@ -352,8 +468,8 @@ var panoramaOptions = {
 
 function initPanorama() {
 	pano = new naver.maps.Panorama("pano", {
-		position : new naver.maps.LatLng(37.60011214750527,
-				126.70897451513594),
+		position : new naver.maps.LatLng(37.4954644,
+				126.8875386),
 		pov : {
 			pan : -135,
 			tilt : 29,

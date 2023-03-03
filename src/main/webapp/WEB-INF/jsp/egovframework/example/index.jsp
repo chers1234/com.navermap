@@ -22,7 +22,7 @@
 <div class="buttons">
     <input id="interaction" type="button" name="지도 인터렉션" value="지도 인터렉션" class="control-btn" />
     <input id="kinetic" type="button" name="관성 드래깅" value="관성 드래깅" class="control-btn" />
-    <input id="tile-transition" type="button" name="타일 fadeIn 효과" value="타일 fadeIn 효과" class="control-btn" />
+    <!-- <input id="tile-transition" type="button" name="타일 fadeIn 효과" value="타일 fadeIn 효과" class="control-btn" /> -->
     <input id="controls" type="button" name="모든 지도 컨트롤" value="모든 지도 컨트롤" class="control-btn" />
     <input id="min-max-zoom" type="button" name="최소/최대 줌 레벨" value="최소/최대 줌 레벨: 10 ~ 21" class="control-btn" />
     <input id="remove" type="button" value="폴리라인 삭제" class="btn" />
@@ -184,7 +184,7 @@ $("#kinetic").on("click", function(e) {
 });
 
 // 타일 fadeIn 효과
-$("#tile-transition").on("click", function(e) {
+/* $("#tile-transition").on("click", function(e) {
     e.preventDefault();
 
     if (map.getOptions("tileTransition")) {
@@ -195,7 +195,7 @@ $("#tile-transition").on("click", function(e) {
         map.setOptions("tileTransition", true); //타일 fadeIn 효과 켜기
         $(this).addClass("control-on");
     }
-});
+}); */
 
 //min/max 줌 레벨
 $("#min-max-zoom").on("click", function(e) {

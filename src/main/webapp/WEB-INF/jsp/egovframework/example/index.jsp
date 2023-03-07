@@ -9,6 +9,7 @@
     <script type="text/javascript" src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=nn9o99r7mj"></script>
     <script type="text/javascript" src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=nn9o99r7mj&amp;submodules=panorama,geocoder,drawing,visualization"></script>
     <script src="http://code.jquery.com/jquery-latest.min.js"></script>
+    <script type="text/javascript" src="http://code.jquery.com/jquery-2.2.4.min.js"></script>
     <style type="text/css">
         #map .buttons { position:absolute;top:0;left:0;z-index:1000;padding:5px; }
         #map .buttons .control-btn { margin:0 5px 5px 0; }
@@ -21,13 +22,12 @@
     </style>
 </head>
 <body>
-<div id="wrap" class="section">
-	<div id="map" style="width:100%;height:550px;">
+<div id="map" style="width:100%;height:520px;">
 	<div class="search" style="">
 		<input id="address" type="text" placeholder="검색할 주소" value="가마산로 245" />
 		<input id="submit" type="button" value="주소 검색" />
 	</div>
-	</div>
+</div>
 <div class="buttons">
     <input id="interaction" type="button" name="지도 인터렉션" value="지도 인터렉션" class="control-btn" />
     <input id="kinetic" type="button" name="관성 드래깅" value="관성 드래깅" class="control-btn" />
@@ -37,8 +37,6 @@
     <input id="remove" type="button" value="폴리라인 삭제" class="btn" />
     <input id="street" type="button" value="거리뷰" class="control-btn control-on" />
 </div>
-</div>
-
 <form id="search-form">
 	<label for="start-point">출발지:</label>
 	<input type="text" id="start-point" name="start-point"><br>
@@ -120,11 +118,9 @@ naver.maps.Event.once(map, 'init', function () {
             navigator.geolocation.getCurrentPosition(onSuccessGeolocation, onErrorGeolocation);
         } else {
             var center = map.getCenter();
-            infowindow.setContent('<div style="padding:20px;"><h5 style="margin-bottom:5px;color:#f00;">Geolocation not supported</h5></div>');
-            infowindow.open(map, center);
+/*             infowindow.setContent('<div style="padding:20px;"><h5 style="margin-bottom:5px;color:#f00;">Geolocation not supported</h5></div>');
+            infowindow.open(map, center); */
         }
-
-        
     });
 });
 
@@ -134,11 +130,7 @@ function onSuccessGeolocation(position) {
 
     map.setCenter(location); // 얻은 좌표를 지도의 중심으로 설정합니다.
     map.setZoom(13); // 지도의 줌 레벨을 변경합니다.
-
-    infowindow.setContent('<div style="padding:10px;">' + '현재 나의 위치' + '</div>');
-
-    infowindow.open(map, location);
-    console.log('Coordinates: ' + location.toString());
+    console.log('현재 나의 위치: ' + location.toString());
 }
 
 function onErrorGeolocation() {
@@ -402,6 +394,13 @@ function searchAddressToCoordinate(address) {
 function initGeocoder() {
     map.addListener('click', function(e) {
         searchCoordinateToAddress(e.coord);
+        
+        if (streetLayer.getMap()) {
+            var latlng = e.coord;
+
+            // 파노라마의 setPosition()은 해당 위치에서 가장 가까운 파노라마(검색 반경 300미터)를 자동으로 설정합니다.
+            pano.setPosition(latlng);
+        }
     });
 
     $('#address').on('keydown', function(e) {
@@ -496,35 +495,9 @@ function hasAddition (addition) {
 }
 
 naver.maps.onJSContentLoaded = initGeocoder;
+</script>
 
-
-
-
-/////////
-/////////
-////////
-//마커
-/* var marker = new naver.maps.Marker({
-	position : new naver.maps.LatLng(37.4954644, 126.8875386),
-	map : map
-}); */
-
-//마커 및 레이어 이동
-naver.maps.Event.addListener(map, 'click', function(e) {
-	//클릭시 마커생성
-//	marker.setPosition(e.coord);
-
-	
-	console.log('Your current position is : ' + e.coord);
-
-	if (streetLayer.getMap()) {
-		var LatLng = e.coord;
-
-		pano.setPosition(LatLng);
-	}
-});
-////
-////
+<script>
 var position = new naver.maps.LatLng(37.4954644, 126.8875386);
 var pano = null;
 
@@ -555,7 +528,9 @@ function initPanorama() {
 	});
 }
 
-naver.maps.onJSContentLoaded = initPanorama;
+window.addEventListener('load', function() {
+	  initPanorama();
+	});
 
 $("#zoom").on("click", function(e) {
 	e.preventDefault();
@@ -572,32 +547,6 @@ $("#zoom").on("click", function(e) {
 			zoomControl : false
 		});
 		el.val("ZoomControl 켜기").removeClass("control-on");
-	}
-});
-
-$("#zoomOption").on("click", function(e) {
-	e.preventDefault();
-
-	var el = $(this), zoomControlEnabled = pano.getOptions("zoomControl");
-
-	if (!zoomControlEnabled)
-		return;
-
-	if (!el.hasClass("control-on")) {
-		pano.setOptions({
-			zoomControlOptions : {
-				style : naver.maps.ZoomControlStyle.LARGE
-			}
-		});
-
-		el.val("작게 보기").addClass("control-on");
-	} else {
-		pano.setOptions({
-			zoomControlOptions : {
-				style : naver.maps.ZoomControlStyle.SMALL
-			}
-		});
-		el.val("크게 보기").removeClass("control-on");
 	}
 });
 </script>

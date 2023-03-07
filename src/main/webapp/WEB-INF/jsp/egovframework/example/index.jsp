@@ -36,6 +36,7 @@
     <input id="min-max-zoom" type="button" name="최소/최대 줌 레벨" value="최소/최대 줌 레벨: 10 ~ 21" class="control-btn" />
     <input id="remove" type="button" value="폴리라인 삭제" class="btn" />
     <input id="street" type="button" value="거리뷰" class="control-btn control-on" />
+    
 </div>
 <form id="search-form">
 	<label for="start-point">출발지:</label>
@@ -304,9 +305,7 @@ $('#btn-search').on("click",function(event) {
 		});
 	});
 });
-/////////
-/////////
-/////////
+
 var infoWindow = new naver.maps.InfoWindow({
     anchorSkew: true
 });

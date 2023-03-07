@@ -36,7 +36,6 @@
     <input id="min-max-zoom" type="button" name="최소/최대 줌 레벨" value="최소/최대 줌 레벨: 10 ~ 21" class="control-btn" />
     <input id="remove" type="button" value="폴리라인 삭제" class="btn" />
     <input id="street" type="button" value="거리뷰" class="control-btn control-on" />
-    
 </div>
 <form id="search-form">
 	<label for="start-point">출발지:</label>
@@ -340,7 +339,7 @@ function searchCoordinateToAddress(latlng) {
         }
 
         infoWindow.setContent([
-            '<div style="padding:10px;min-width:200px;line-height:150%;">',
+            '<div style="padding:10px;min-width:150px;line-height:100%;">',
             '<h4 style="margin-top:5px;">검색 좌표</h4><br />',
             htmlAddresses.join('<br />'),
             '</div>'
@@ -379,7 +378,7 @@ function searchAddressToCoordinate(address) {
         }
 
         infoWindow.setContent([
-            '<div style="padding:10px;min-width:200px;line-height:150%;">',
+            '<div style="padding:10px;min-width:150px;line-height:100%;">',
             '<h4 style="margin-top:5px;">검색 주소 : '+ address +'</h4><br />',
             htmlAddresses.join('<br />'),
             '</div>'
@@ -396,12 +395,10 @@ function initGeocoder() {
         
         if (streetLayer.getMap()) {
             var latlng = e.coord;
-
             // 파노라마의 setPosition()은 해당 위치에서 가장 가까운 파노라마(검색 반경 300미터)를 자동으로 설정합니다.
             pano.setPosition(latlng);
         }
     });
-
     $('#address').on('keydown', function(e) {
         var keyCode = e.which;
 
